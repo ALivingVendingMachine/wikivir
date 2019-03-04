@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Hello World!</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/foundation.css' %}">
+  </head>
+  <body>
+    <div class="top-bar" id="top-bar">
+      <div class="top-bar-left">
+        <a href="#">wikivir</a>
+      </div>
+      <div class="top-bar-right">
+        <form action="/" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form.file }}
+          <!-- <label for="fileUpload">Upload File</label> -->
+          <button type="submit" name="submitButton" class="btn">submit</button>
+        </form>
+      </div>
+    </div>
+    {% block content %}
+    {% endblock %}
+  </body>
+</html>
