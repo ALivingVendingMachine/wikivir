@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% load markdownUtil %}
+
+{% block content %}
+<p>got {{ topic }}</p>
+
+{{ mdtest | markdown | safe }}
+
+{% endblock %}

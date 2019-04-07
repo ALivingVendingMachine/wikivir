@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<center><h1>about</h1></center>
+<p>
+    wikivir is a thing that I made for a class at CSU Chico, mostly because like,
+    listen, I love malware.  the problem is, there aren't a lot of good places to
+    talk about or work on it in a collaborative fashion.  there's been some changes
+    along these lines (see ghidra's collaborative options, for example), but we've
+    yet to see a good way to do this.  view this as a proof of concept, more than
+    a finished thing
+</p>
+<center><h2>current problems</h2></center>
+<p>
+    atm, it can only accept and analyze <i>anything</i> that the gnu binutils can
+    handle.  so, mostly this means <a href="{% url 'topicView' topic='ELF' %}">ELF</a> and 
+    some <a href="{% url 'topicView' topic='PE' %}">PE</a> handling abilities.  so that means no macro viruses, no weird parse problems
+    that lead to vulns, etc etc
+</p>
+<center><h2>things to keep in mind</h2></center>
+<p>
+    <i>everything you give me is burned.  they know you know what's going on now.</i>
+</p>
+
+<p>
+    any, copywrite me 2019, but i hate copywrite, so...
+</p>
+<p><a href="https:www.github.com/alivingvendingmachine">alivingvendingmachine</a></p>
+{% endblock %}

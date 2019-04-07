@@ -119,3 +119,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# media stuff
+
+MEDIA_ROOT = '/samples/'
+
+# Channels stuff, from https://gearheart.io/blog/creating-a-chat-with-django-channels/
+
+#redis_host = os.environ.get('REDIS_HOST', 'localhost')
+#CHANNEL_LAYERS = {
+#    "default": {
+#        "BACKEND": "asgi_redis.RedisChannelLayer",
+#        "CONFIG": {
+#            "hosts": [(redis_host, 6379)]
+#        },
+#        "ROUTING": "wikivir.routing.channel_routing"
+#    }
+#}

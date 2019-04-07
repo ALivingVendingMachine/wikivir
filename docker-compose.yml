@@ -5,7 +5,19 @@ services:
   web:
     build: .
     volumes:
-       - .:/code
+      - .:/code
     ports:
-       - 8000:8000
+      - 8000:8000
+    restart: always
     command: python /code/wikivir/manage.py runserver 0.0.0.0:8000
+
+#  redis:
+#    restart: always
+#    image: redis
+#    ports:
+#      - 6379:6379
+#    volumes:
+#      - redisdata:/data
+
+
+
