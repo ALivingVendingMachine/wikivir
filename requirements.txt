@@ -2,5 +2,6 @@ Django>=2.0,<3.0
 pylint
 pylint_django
 Markdown
-#channels
-#asgi_redis
+channels
+asgi_redis
+channels_redis

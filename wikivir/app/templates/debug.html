@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>this is a test</h1>
+
+<textarea name="textarea" id="textEditArea" cols="80" rows="30"></textarea>
+
+<script>
+    var pathlist = window.location.pathname.split('/');
+
+    var sock = new WebSocket("ws://localhost:8000/ws/" + pathlist[pathlist.length - 1]);
+    console.log('added to ' + pathlist[pathlist.length - 1]);
+
+    sock.onmessage = function(e) {
+        var elem = document.getElementById("textEditArea");
+        //elem.value = e['data']['message'];
+        console.log(JSON.parse(e['data']))
+        if (JSON.parse(e['data'])['code'] === 'conn') {
+            sock.send(elem.value);
+        } else {
+            elem.value = JSON.parse(e['data'])['message'];
+        }
+    }
+
+    function syncText() {
+        var elem = document.getElementById("textEditArea");
+        console.log("sending val");
+        sock.send(elem.value);
+    }
+
+    var elem = document.getElementById("textEditArea");
+    elem.addEventListener('input', syncText);
+</script>
+{% endblock %}

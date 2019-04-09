@@ -123,3 +123,6 @@ def topicNotFound(request, topic):
     }
 
     return render(request, 'topicNotFound.html', cont)
+
+def debug(request, topic):
+    return render(request, 'debug.html', {})

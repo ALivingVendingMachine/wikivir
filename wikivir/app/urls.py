@@ -11,5 +11,6 @@ urlpatterns = [
     # adversary tactics and techniques & common knowledge, thanks MITRE for the cool
     # acronym
     path('att/<str:topic>', views.topicView, name='topicView'),
-    path('topicNotFound/<str:topic>', views.topicNotFound, name='topicNotFound')
+    path('topicNotFound/<str:topic>', views.topicNotFound, name='topicNotFound'),
+    path('debug/<str:topic>', views.debug, name='debug'),
 ]

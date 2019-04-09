@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
+    'wikivir',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -124,15 +126,13 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT = '/samples/'
 
-# Channels stuff, from https://gearheart.io/blog/creating-a-chat-with-django-channels/
+ASGI_APPLICATION = 'wikivir.routing.application'
 
-#redis_host = os.environ.get('REDIS_HOST', 'localhost')
-#CHANNEL_LAYERS = {
-#    "default": {
-#        "BACKEND": "asgi_redis.RedisChannelLayer",
-#        "CONFIG": {
-#            "hosts": [(redis_host, 6379)]
-#        },
-#        "ROUTING": "wikivir.routing.channel_routing"
-#    }
-#}
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('redis', 6379)],
+        },
+    },
+}
