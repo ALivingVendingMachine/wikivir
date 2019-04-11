@@ -4,9 +4,17 @@
     <meta charset="utf-8">
     <title>Hello World!</title>
     {% load static %}
+    <script src="{% static 'js/vendor/jquery.js' %}"></script>
+    <script src="{% static 'js/vendor/foundation.min.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/foundation.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
   </head>
   <body>
+    <script type="text/javascript"> //Init foundation
+            $(function () {
+                $(document).foundation();
+            });
+    </script>
     <div class="top-bar" id="top-bar">
       <div class="top-bar-left">
         <a href="{% url 'index' %}">wikivir</a>
@@ -14,9 +22,10 @@
       <div class="top-bar-right">
         <form action="/" method="post" enctype="multipart/form-data">
           {% csrf_token %}
-          {{ form.file }}
+          <!-- {{ form.file }} -->
+          <input type="file" name='file'>
           <!-- <label for="fileUpload">Upload File</label> -->
-          <button type="submit" name="submitButton" class="btn">submit</button>
+          <button type="submit" name="submitButton" class="button">submit</button>
         </form>
       </div>
     </div>

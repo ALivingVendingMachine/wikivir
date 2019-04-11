@@ -5,3 +5,5 @@ Markdown
 channels
 asgi_redis
 channels_redis
+django-taggit
+bleach

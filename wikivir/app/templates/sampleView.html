@@ -1,5 +1,102 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>ayyyyyyyyyyyyyyyy</h1>
+{% load static %}
+<script src="https://cdn.jsdelivr.net/npm/superagent"></script>
+<script src="{% static 'js/vendor/showdown.min.js' %}"></script>
+<script>
+    var showdown = new showdown.Converter();
+    var holdme = {};
+    var i = 0;
+    var ready = false;
+    var inter = setInterval(checkReady, 800);
+    var loadInter = setInterval(loadingAnimation, 800);
+
+    function checkReady() {
+        var res = {};
+        superagent.get('/api' + window.location.pathname).end((err, resp) => {
+            if (err) {
+                console.log(err);
+            }
+            res = resp;
+            ready = JSON.parse(res['text'])['ready'];
+            if (ready) {
+                clearInterval(inter);
+                clearInterval(loadInter);
+                var load = document.getElementsByClassName('content-space');
+                holdme = JSON.parse(res['text']);
+                for (const key in holdme) {
+                    if (load[key] !== undefined) {
+                        if (key == 'tags') {
+                            if (holdme[key].length == 0) {
+                                document.getElementById('tagzone').innerHTML = "<p>No tags.</p>"
+                            } else {
+                                for (const val in holdme[key]) {
+                                    document.getElementById('tagzone').innerHTML += "<button type='button' class='button'>" +
+                                    holdme[key][val] + "</button>\t";
+                                }
+                            }
+                        } else {
+                            load[key].innerHTML = "<button type='button' class='button' style='float: right;' onclick='switchToEdit(" + key + ")'>Edit</button>";
+                            load[key].innerHTML += showdown.makeHtml(holdme[key]);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function loadingAnimation() {
+        i = (i + 1) % 4;
+        var load = document.getElementsByClassName('content-space');
+        for (let j = 0; j < load.length; j++) {
+            if (load[j].id == 'tags') {
+                continue
+            } else {
+                load[j].innerHTML = '<p>' + "Loading " + Array(i+1).join(".") + '</p>';
+            }
+        }
+    }
+
+    function switchToEdit(elemName) {
+        console.log(elemName.id);
+        window.location = '/edit' + window.location.pathname + '/' + elemName.id;
+        //redirect to editor page
+    }
+</script>
+
+<div id='contentDiv'>
+    <ul class='tabs' data-tabs id='contentTabs'>
+        <li class="tabs-title is-active"><a href="#file">file</a></li>
+        <li class="tabs-title"><a href="#objdump">objdump</a></li>
+        <li class="tabs-title"><a href="#readelf">readelf</a></li>
+        <li class="tabs-title"><a href="#tags">tags</a></li>
+    </ul>
+
+    <div class="tabs-content" data-tabs-content='contentTabs'>
+        <div class="tabs-panel is-active content-space" id='file'>
+            <p>content</p>
+        </div>
+        <div class="tabs-panel content-space" id='objdump'>
+            <p>content 2</p>
+        </div>
+        <div class="tabs-panel content-space" id='readelf'>
+            <p>content 3</p>
+        </div>
+        <div class="tabs-panel content-space" id='tags'>
+            <h2>Tags</h2>
+            <div id='tagzone'>
+            </div>
+            <form action="/api/sample" method="post" id="tagform">
+                <input type="text" name="tags" id="taginput">
+                {% csrf_token %}
+                <button type="submit" name="tagSubmit" class="button">submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('tagform').action = '/addtag' + window.location.pathname;
+</script>
 {% endblock %}

@@ -22,6 +22,21 @@
     <i>everything you give me is burned.  they know you know what's going on now.</i>
 </p>
 
+<center><h2>how is this safe?</h2></center>
+<p>
+    <i>ITS NOT!</i>
+</p>
+
+<center><h2>how does that text editor work?</h2></center>
+<p>
+    basically its ripped off from showdown's example page, which is the js library
+    that I'm using to render the markdown.  there's two objects, one of them a
+    textarea, and the other a span.  when you connect to the page, it sets up a 
+    websocket connection to a group specific to that sample, and then it grabs the
+    current state of the entry from its peers.  then, as the page changes, showdown
+    grabs the value of the textarea and renders it.  that's it!
+</p>
+
 <p>
     any, copywrite me 2019, but i hate copywrite, so...
 </p>

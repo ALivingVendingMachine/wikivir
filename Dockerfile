@@ -5,4 +5,5 @@ WORKDIR /code
 ADD . /code/
 RUN apt update
 RUN apt install -y build-essential
+RUN apt install -y file
 RUN pip install -r requirements.txt

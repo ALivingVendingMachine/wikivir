@@ -12,5 +12,9 @@ urlpatterns = [
     # acronym
     path('att/<str:topic>', views.topicView, name='topicView'),
     path('topicNotFound/<str:topic>', views.topicNotFound, name='topicNotFound'),
-    path('debug/<str:topic>', views.debug, name='debug'),
+    path('api/sample/<str:sampleHash>', views.apiSample, name='apiSample'),
+    path('addtag/sample/<str:sampleHash>', views.addTag, name='addTag'),
+    path('edit/sample/<str:sampleHash>/<str:mod>', views.editSample, name='editSample'),
+    path('edit/topic/<str:topic>', views.editTopic, name='editTopic'),
+    #path('debug/<str:topic>', views.debug, name='debug'),
 ]
