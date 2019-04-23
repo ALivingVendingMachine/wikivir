@@ -2,8 +2,9 @@
 
 {% block content %}
 {% load static %}
-<script src="https://cdn.jsdelivr.net/npm/superagent"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/superagent"></script> -->
 <script src="{% static 'js/vendor/showdown.min.js' %}"></script>
+<script src="{% static 'js/vendor/superagent.min.js' %}"></script>
 <script>
     var showdown = new showdown.Converter();
     var holdme = {};
@@ -27,19 +28,8 @@
                 holdme = JSON.parse(res['text']);
                 for (const key in holdme) {
                     if (load[key] !== undefined) {
-                        if (key == 'tags') {
-                            if (holdme[key].length == 0) {
-                                document.getElementById('tagzone').innerHTML = "<p>No tags.</p>"
-                            } else {
-                                for (const val in holdme[key]) {
-                                    document.getElementById('tagzone').innerHTML += "<button type='button' class='button'>" +
-                                    holdme[key][val] + "</button>\t";
-                                }
-                            }
-                        } else {
-                            load[key].innerHTML = "<button type='button' class='button' style='float: right;' onclick='switchToEdit(" + key + ")'>Edit</button>";
-                            load[key].innerHTML += showdown.makeHtml(holdme[key]);
-                        }
+                        load[key].innerHTML = "<button type='button' class='button' style='float: right;' onclick='switchToEdit(" + key + ")'>Edit</button>";
+                        load[key].innerHTML += showdown.makeHtml(holdme[key]);
                     }
                 }
             }
@@ -70,33 +60,22 @@
         <li class="tabs-title is-active"><a href="#file">file</a></li>
         <li class="tabs-title"><a href="#objdump">objdump</a></li>
         <li class="tabs-title"><a href="#readelf">readelf</a></li>
-        <li class="tabs-title"><a href="#tags">tags</a></li>
+        <li class="tabs-title"><a href="#topics">topics</a></li>
     </ul>
 
     <div class="tabs-content" data-tabs-content='contentTabs'>
         <div class="tabs-panel is-active content-space" id='file'>
-            <p>content</p>
+            <p>Loading</p>
         </div>
         <div class="tabs-panel content-space" id='objdump'>
-            <p>content 2</p>
+            <p>Loading</p>
         </div>
         <div class="tabs-panel content-space" id='readelf'>
-            <p>content 3</p>
+            <p>Loading</p>
         </div>
-        <div class="tabs-panel content-space" id='tags'>
-            <h2>Tags</h2>
-            <div id='tagzone'>
-            </div>
-            <form action="/api/sample" method="post" id="tagform">
-                <input type="text" name="tags" id="taginput">
-                {% csrf_token %}
-                <button type="submit" name="tagSubmit" class="button">submit</button>
-            </form>
+        <div class="tabs-panel content-space" id='topics'>
         </div>
     </div>
 </div>
 
-<script>
-    document.getElementById('tagform').action = '/addtag' + window.location.pathname;
-</script>
 {% endblock %}

@@ -2,14 +2,14 @@
 
 {% block content %}
 {% load static %}
-<script src="https://cdn.jsdelivr.net/npm/superagent"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/superagent"></script> -->
 <script src="{% static 'js/vendor/showdown.min.js' %}"></script>
+<script src="{% static 'js/vendor/superagent.min.js' %}"></script>
 <div class='grid-x'>
     <div class='cell small-6'>
         <textarea name="textarea" id="editor" cols="80" rows="30">Loading...</textarea>
     </div>
     <div class='cell small-6'>
-
         <button type='button' class='button' style='float: right;' onclick=saveAndRedirect()>Save Changes</button>
         <span id='renderer'></span>
     </div>
@@ -22,12 +22,9 @@
     var pathlist = window.location.pathname.split('/');
 
     var sock = new WebSocket("ws://localhost:8000/ws/" + window.location.pathname.split('/').join(''));
-    console.log('added to ' + window.location.pathname.split('/').join(''));
 
     sock.onmessage = function(e) {
         var elem = document.getElementById("editor");
-        //elem.value = e['data']['message'];
-        console.log(JSON.parse(e['data']))
         if (JSON.parse(e['data'])['code'] === 'conn') {
             sock.send(elem.value);
         } else {
@@ -40,9 +37,7 @@
 
     function syncText() {
         var elem = document.getElementById("editor");
-        console.log("sending val");
         sock.send(elem.value);
-        console.log("syncing view");
         var elem2 = document.getElementById("renderer");
         elem2.innerHTML = showdown.makeHtml(elem.value);
     }
@@ -68,7 +63,6 @@
     render();
 
     function saveAndRedirect() {
-        console.log('hit');
         var loc = window.location.pathname.split('/')[3];
         console.log('api/sample/' + loc)
         superagent.post('/api/sample/' + loc).set('X-CSRFToken', '{{csrf_token}}').send({ '{{ module }}' : document.getElementById('editor').value}).type('form').then( (err, resp) => {

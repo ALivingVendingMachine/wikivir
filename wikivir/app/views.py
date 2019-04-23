@@ -20,7 +20,6 @@ fields = [
     'file',
     'readelf',
     'objdump',
-    'tags',
 ]
 
 def index(request):
@@ -138,42 +137,30 @@ def apiSample(request, sampleHash):
         for key, value in request.POST.dict().items():
             print("checking for " + key) 
             if key in fields:
-                setattr(sample, key, str(value))
+                setattr(sample, key, bleach.clean(str(value)))
         
         sample.save()
         return JsonResponse({"status": "good"})
 
     obj = {}
+    tops = []
 
     try:
         sample = MalwareSample.objects.get(fileHash=sampleHash)
     except MalwareSample.DoesNotExist:
         return JsonResponse({"err": str(sampleHash) + " does not exist", "status": "err"})
     
-    obj['fileHash'] = sample.fileHash
+    for top in sample.relatedTopics.all():
+        tops.append(bleach.clean(top.topicTitle))
+
+    obj['fileHash'] = bleach.clean(sample.fileHash)
     obj['date'] = sample.date
     obj['ready'] = sample.ready
-    obj['file'] = sample.file
-    obj['readelf'] = sample.readelf
-    obj['objdump'] = sample.objdump
-    obj['tags'] = list(sample.tags.names())
+    obj['file'] = bleach.clean(sample.file)
+    obj['readelf'] = bleach.clean(sample.readelf)
+    obj['objdump'] = bleach.clean(sample.objdump)
+    obj['topics'] = tops
     return JsonResponse(obj)
-
-def addTag(request, sampleHash):
-    if request.method == "POST":
-        print("got it")
-        try:
-            sample = MalwareSample.objects.get(fileHash=sampleHash)
-        except MalwareSample.DoesNotExist:
-            return redirect(sampleView, sampleHash)
-
-        for key, value in request.POST.dict().items():
-            if key == "tags":
-                sample.tags.add(value)
-        
-        sample.save()
-        return redirect(sampleView, sampleHash)
-    return redirect(sampleView, sampleHash)
 
 def editSample(request, sampleHash, mod):
     if request.method == "POST":
@@ -192,7 +179,7 @@ def editSample(request, sampleHash, mod):
 
     cont = {
         #'content': bleach.clean(module),
-        'module': mod,
+        'module': bleach.clean(mod),
     }
 
     return render(request, 'editView.html', cont)
@@ -200,6 +187,26 @@ def editSample(request, sampleHash, mod):
 def editTopic(request, topic):
 
     return JsonResponse({'err':'not impl'})
+
+
+def allTopics(request):
+    categories = [
+        "TE",
+        "AP",
+        "SA",
+    ]
+
+    objects = Topic.objects.all()
+    tops = {}
+
+    for o in objects:
+        tops[o.get_category_display()] = o
+
+    cont = {
+        "tops": tops
+    }
+
+    return render(request, 'allTopics.html', cont)
 
 # debug serve view
 def debug(request, topic):
