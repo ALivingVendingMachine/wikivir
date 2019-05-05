@@ -1,10 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% load dictionaryUtil %}
 
+<h1>Techniques</h1>
+<ul>
+    {% for i in te %}
+        <li><a href="{% url 'topicView' topic=i %}">{{ i }}</a></li>
+    {% endfor %}
+</ul>
 
-{% for key, value in tops.items %}
-<h1>{{key}}</h1>
-{% endfor %}
+<h1>APTs</h1>
+<ul>
+    {% for i in ap %}
+        <li><a href="{% url 'topicView' topic=i %}">{{ i }}</a></li>
+    {% endfor %}
+</ul>
+
+<h1>Samples</h1>
+<ul>
+    {% for i in sa %}
+        <li><a href="{% url 'topicView' topic=i %}">{{ i }}</a></li>
+    {% endfor %}
+</ul>
 
 {% endblock %}

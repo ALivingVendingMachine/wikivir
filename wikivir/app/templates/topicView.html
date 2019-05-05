@@ -1,8 +1,33 @@
 {% extends 'base.html' %}
 {% load markdownUtil %}
 
+
 {% block content %}
-<p>got {{ topic }}</p>
+{% load static %}
+<script src="{% static 'js/vendor/showdown.min.js' %}"></script>
+<script src="{% static 'js/vendor/superagent.min.js' %}"></script>
+
+<script>
+    var showdown = new showdown.Converter();
+
+    function switchToEdit() {
+        var loc = window.location.pathname.split('/')
+        window.location = '/edit/topic/' + loc[loc.length-1];
+        //redirect to editor page
+    }
+ 
+</script>
+
+<h1 id='topictitle'>Loading</h1>
+
+<button type='button' class='button' style='float: right;' onclick=switchToEdit()>Edit</button>
+<div id='topicContent'></div>
+
+<script>
+    var space = document.getElementById('topicContent');
+
+    space.innerHTML = showdown.makeHtml('{{ topicBody }}');
+</script>
 
 {{ mdtest | markdown | safe }}
 

@@ -2,9 +2,9 @@
 
 {% block content %}
 {% load static %}
-<!-- <script src="https://cdn.jsdelivr.net/npm/superagent"></script> -->
 <script src="{% static 'js/vendor/showdown.min.js' %}"></script>
 <script src="{% static 'js/vendor/superagent.min.js' %}"></script>
+<textarea name="title" id="title" cols="30" rows="1">Loading</textarea>
 <div class='grid-x'>
     <div class='cell small-6'>
         <textarea name="textarea" id="editor" cols="80" rows="30">Loading...</textarea>
@@ -21,7 +21,7 @@
 
     var sock = new WebSocket("ws://localhost:8000/ws/" + window.location.pathname.split('/').join(''));
 
-    sock.onmessage = function (e) {
+    sock.onmessage = function(e) {
         var elem = document.getElementById("editor");
         if (JSON.parse(e['data'])['code'] === 'conn') {
             sock.send(elem.value);
@@ -49,27 +49,34 @@
     var elem = document.getElementById("editor");
     elem.addEventListener('input', syncText);
 
-    superagent.get('/api/sample/' + window.location.pathname.split('/')[3]).end((err, resp) => {
+    superagent.get('/api/topic/' + window.location.pathname.split('/')[3]).end((err, resp) => {
         if (err) {
             console.log(err)
         };
-        var mod = JSON.parse(resp['text'])['{{ module }}'];
+        var mod = JSON.parse(resp['text'])['topicBody'];
         var elem = document.getElementById("editor");
         elem.value = mod;
+        elem = document.getElementById("title");
+        elem.value = JSON.parse(resp['text'])['topicTitle'];
         render();
     });
     render();
 
     function saveAndRedirect() {
         var loc = window.location.pathname.split('/')[3];
-        console.log('api/sample/' + loc)
-        superagent.post('/api/sample/' + loc).set('X-CSRFToken', '{{csrf_token}}').send({ '{{ module }}': document.getElementById('editor').value }).type('form').then((err, resp) => {
+        console.log('api/topic/' + loc)
+        superagent.post('/api/topic/' + loc).set('X-CSRFToken', '{{csrf_token}}').send({
+            'topicBody' : document.getElementById('editor').value,
+            'topicTitle' : encodeURI(document.getElementById('title').value)
+        
+        }).type('form').then( (err, resp) => {
             if (err) {
                 console.log(err);
             }
-            window.location = '/sample/' + loc;
+            window.location = '/att/' + encodeURI(document.getElementById('title').value);
         });
 
     }
 </script>
+
 {% endblock %}

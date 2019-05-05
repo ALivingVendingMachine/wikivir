@@ -12,7 +12,7 @@ import bleach
 
 # Create your views here.
 
-fields = [
+fieldsMalware = [
     'fileHash',
     'fileBlob',
     'date',
@@ -20,6 +20,13 @@ fields = [
     'file',
     'readelf',
     'objdump',
+]
+
+fieldsTopic = [
+    'topicTitle',
+    'topicBody',
+    'relatedSamples',
+    'category',
 ]
 
 def index(request):
@@ -110,12 +117,12 @@ def topicView(request, topic):
     except Topic.DoesNotExist:
         return redirect('topicNotFound', topic=topic)
 
-    cont = {
-        'topic': topicEntry.topicTitle,
-        'topicBody': topicEntry.topicBody,
-    }
+    #cont = {
+    #    'topic': topicEntry.topicTitle,
+    #    'topicBody': topicEntry.topicBody,
+    #}
 
-    return render(request, 'topicView.html', cont) 
+    return render(request, 'topicView.html', {}) 
 
 def topicNotFound(request, topic):
     cont = {
@@ -136,7 +143,7 @@ def apiSample(request, sampleHash):
 
         for key, value in request.POST.dict().items():
             print("checking for " + key) 
-            if key in fields:
+            if key in fieldsMalware:
                 setattr(sample, key, bleach.clean(str(value)))
         
         sample.save()
@@ -160,6 +167,40 @@ def apiSample(request, sampleHash):
     obj['readelf'] = bleach.clean(sample.readelf)
     obj['objdump'] = bleach.clean(sample.objdump)
     obj['topics'] = tops
+    obj['status'] = "good"
+    return JsonResponse(obj)
+
+def apiTopic(request, topic):
+    if request.method == "POST":
+        print("got it")
+        try:
+            top = Topic.objects.get(topicTitle=topic)
+        except MalwareSample.DoesNotExist:
+            return JsonResponse({"err": str(topic) + " does not exist", "status":"err"})
+
+        print(request.POST.dict())
+
+        for key, value in request.POST.dict().items():
+            print("looking for " + key)
+            if key == "topicBody":
+                top.topicBody = value
+            if key == "topicTitle":
+                top.topicTitle = value
+       
+        top.save()
+        return JsonResponse({"status": "good"})
+
+    obj = {}
+
+    try:
+        top = Topic.objects.get(topicTitle=topic)
+    except Topic.DoesNotExist:
+        return JsonResponse({"err": str(topic) + " does not exist", "status": "err"})
+
+    obj['topicTitle'] = bleach.clean(top.topicTitle)
+    obj['topicBody'] = bleach.clean(top.topicBody)
+    obj['category'] = bleach.clean(top.category)
+    obj['status'] = "good"
     return JsonResponse(obj)
 
 def editSample(request, sampleHash, mod):
@@ -185,9 +226,7 @@ def editSample(request, sampleHash, mod):
     return render(request, 'editView.html', cont)
 
 def editTopic(request, topic):
-
-    return JsonResponse({'err':'not impl'})
-
+    return render(request, "editTopic.html", {})
 
 def allTopics(request):
     categories = [
@@ -196,14 +235,24 @@ def allTopics(request):
         "SA",
     ]
 
+    teList = []
+    apList = []
+    saList = []
+
     objects = Topic.objects.all()
-    tops = {}
 
     for o in objects:
-        tops[o.get_category_display()] = o
+        if o.category == "TE":
+            teList.append(o.topicTitle)
+        if o.category == "AP":
+            apList.append(o.topicTitle)
+        if o.category == "SA":
+            saList.append(o.topicTitle)
 
     cont = {
-        "tops": tops
+        "te": teList,
+        "ap": apList,
+        "sa": saList,
     }
 
     return render(request, 'allTopics.html', cont)
@@ -238,5 +287,3 @@ def analyzeFile(hashed):
     
     check.ready = True
     check.save()
-
-
