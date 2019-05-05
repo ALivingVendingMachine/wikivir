@@ -1,5 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 from .models import MalwareSample
 from .models import Topic
 from .forms import MalwareSampleForm
@@ -203,6 +206,7 @@ def apiTopic(request, topic):
     obj['status'] = "good"
     return JsonResponse(obj)
 
+@login_required
 def editSample(request, sampleHash, mod):
     if request.method == "POST":
         print(request.POST.dict('content'))
@@ -225,6 +229,7 @@ def editSample(request, sampleHash, mod):
 
     return render(request, 'editView.html', cont)
 
+@login_required
 def editTopic(request, topic):
     return render(request, "editTopic.html", {})
 
@@ -256,6 +261,28 @@ def allTopics(request):
     }
 
     return render(request, 'allTopics.html', cont)
+
+# user management
+# register
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            login(request, user)
+            return redirect('index')
+    else:
+        form = UserCreationForm()
+
+    cont = {'form': form}
+    return render(request, 'register.html', cont)
+
+def logoutView(request):
+    logout(request)
+    return redirect(index)
 
 # debug serve view
 def debug(request, topic):

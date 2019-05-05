@@ -239,3 +239,6 @@ Temporary Items
 
 # VS Code
 .vscode
+
+# secrets secrets are no fun
+secrets

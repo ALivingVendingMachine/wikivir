@@ -6,8 +6,13 @@ services:
     build: .
     volumes:
       - .:/code
-    ports:
-      - 8000:8000
+    #ports:
+    #  - 8000:8000
+    expose:
+      - 8000
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=${SEC_KEY}
     restart: always
     depends_on:
       - "redis"
@@ -22,6 +27,17 @@ services:
     #  - 6379:6379
     #volumes:
     #  - redisdata:/data
+  
+  nginx:
+    restart: always
+    build: ./nginx/
+    depends_on:
+      - web
+    ports:
+            - "80:80"
+            #- "8000:8000"
+    links:
+      - web:web
 
 
 
