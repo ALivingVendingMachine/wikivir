@@ -6,17 +6,20 @@ services:
     build: .
     volumes:
       - .:/code
+      - /static:/static
     #ports:
     #  - 8000:8000
     expose:
       - 8000
     environment:
-      - DEBUG=1
+      - DEBUG=${DEBUG}
       - SECRET_KEY=${SEC_KEY}
     restart: always
     depends_on:
       - "redis"
-    command: python /code/wikivir/manage.py runserver 0.0.0.0:8000
+        #command: python /code/wikivir/manage.py runserver 0.0.0.0:8000
+    command: bash -c "python /code/wikivir/manage.py collectstatic --no-input && python /code/wikivir/manage.py makemigrations && python /code/wikivir/manage.py migrate && python /code/wikivir/manage.py runserver 0.0.0.0:8000"
+
 
   redis:
     restart: always
@@ -36,6 +39,8 @@ services:
     ports:
             - "80:80"
             #- "8000:8000"
+    volumes:
+      - /static:/static
     links:
       - web:web
 
