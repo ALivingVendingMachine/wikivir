@@ -19,7 +19,7 @@
     var showdown = new showdown.Converter();
     var pathlist = window.location.pathname.split('/');
 
-    var sock = new WebSocket("ws://localhost:8000/ws/" + window.location.pathname.split('/').join(''));
+    var sock = new WebSocket("ws://" + window.location.host + "/ws/" + window.location.pathname.split('/').join('').replace(/[^a-z0-9+]+/gi, ''));
 
     sock.onmessage = function (e) {
         var elem = document.getElementById("editor");

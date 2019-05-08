@@ -19,14 +19,43 @@
 </script>
 
 <h1 id='topictitle'>Loading</h1>
+<small style="color: grey" id="topicCat">Loading</small>
 
 <button type='button' class='button' style='float: right;' onclick=switchToEdit()>Edit</button>
-<div id='topicContent'></div>
-
+<div id='topicContent'>Loading</div>
+<h3>Related Samples</h3>
+<div id='samples'></div>
 <script>
-    var space = document.getElementById('topicContent');
-
-    space.innerHTML = showdown.makeHtml('{{ topicBody }}');
+    var cappy = {};
+    var topPath = window.location.pathname.split('/');
+    console.log('/api/topic/' + topPath[topPath.length-1]);
+    console.log(topPath);
+    superagent.get('/api/topic/' + topPath[topPath.length-1]).end((err, resp) => {
+        if (err) {
+            console.log(err);
+        }
+        cappy = resp;
+        var res = JSON.parse(resp['text']);
+        console.log(res);
+        if (res['err'] != undefined) {
+            console.log('something has gone wrong');
+            return;
+        }
+        var space = document.getElementById('topicContent');
+        space.innerHTML = showdown.makeHtml(res['topicBody']);
+        space = document.getElementById('topictitle');
+        space.innerHTML = decodeURI(res['topicTitle']);
+        space = document.getElementById('topicCat');
+        console.log(space);
+        console.log(res['category']);
+        space.innerHTML = res['category'];
+        space = document.getElementById('samples');
+        for (const c in res['samples']) {
+            console.log(res['samples'][c]);
+            space.innerHTML += '<a href="/sample' +'/' + res['samples'][c] +'">' + res['samples'][c] + '</a>';
+            space.innerHTML += '</br>';
+        }
+    });
 </script>
 
 {{ mdtest | markdown | safe }}

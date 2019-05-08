@@ -15,11 +15,15 @@
     </div>
 </div>
 
+<div>
+    <select name="samples" id="samples" multiple="multiple"></select>
+</div>
+
 <script>
     var showdown = new showdown.Converter();
     var pathlist = window.location.pathname.split('/');
 
-    var sock = new WebSocket("ws://localhost:8000/ws/" + window.location.pathname.split('/').join(''));
+    var sock = new WebSocket("ws://" + window.location.host + "/ws/" + window.location.pathname.split('/').join('').replace(/[^a-z0-9+]+/gi, ''));
 
     sock.onmessage = function(e) {
         var elem = document.getElementById("editor");
@@ -51,29 +55,52 @@
 
     superagent.get('/api/topic/' + window.location.pathname.split('/')[3]).end((err, resp) => {
         if (err) {
-            console.log(err)
-        };
+            console.log(err);
+            return;
+        }
         var mod = JSON.parse(resp['text'])['topicBody'];
         var elem = document.getElementById("editor");
         elem.value = mod;
         elem = document.getElementById("title");
         elem.value = JSON.parse(resp['text'])['topicTitle'];
-        render();
+        elem = document.getElementById("samples");
+        var alreadySelected = JSON.parse(resp['text'])['samples']
+        superagent.get('/api/sample/getAllHashes').end((err, resp) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            var res = JSON.parse(resp['text']);
+            console.log(res);
+            for (const c in res['hashes']) {
+                if (alreadySelected && alreadySelected.includes(res['hashes'][c])) {
+                    console.log('ping');
+                    elem.innerHTML += '<option value="'+ c + '" selected="">' + res['hashes'][c] + '</option>';
+                } else {
+                    elem.innerHTML += '<option value="'+ c + '">' + res['hashes'][c] + '</option>';
+                }
+            }
+        });
+       render();
     });
     render();
 
     function saveAndRedirect() {
         var loc = window.location.pathname.split('/')[3];
-        console.log('api/topic/' + loc)
+        var sampleArr = [];
+        var samps = Array.from(document.getElementById('samples').selectedOptions);
+        for (const k in samps) {
+            sampleArr.push(samps[k].text);
+        }
         superagent.post('/api/topic/' + loc).set('X-CSRFToken', '{{csrf_token}}').send({
             'topicBody' : document.getElementById('editor').value,
-            'topicTitle' : encodeURI(document.getElementById('title').value)
-        
+            'topicTitle' : encodeURIComponent(document.getElementById('title').value),
+            'samples' : JSON.stringify(sampleArr)
         }).type('form').then( (err, resp) => {
             if (err) {
                 console.log(err);
             }
-            window.location = '/att/' + encodeURI(document.getElementById('title').value);
+            window.location.replace('/att');
         });
 
     }

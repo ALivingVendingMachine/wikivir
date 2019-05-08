@@ -15,6 +15,7 @@ urlpatterns = [
     path('att/<str:topic>', views.topicView, name='topicView'),
     path('topicNotFound/<str:topic>', views.topicNotFound, name='topicNotFound'),
     # API
+    path('api/sample/getAllHashes', views.apiSampleGetAll, name='apiSampleGetAll'),
     path('api/sample/<str:sampleHash>', views.apiSample, name='apiSample'),
     path('api/topic/<str:topic>', views.apiTopic, name='apiTopic'),
     # Editors

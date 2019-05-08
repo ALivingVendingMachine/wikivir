@@ -12,6 +12,8 @@ import threading
 import subprocess
 import sys
 import bleach
+import json
+import urllib
 
 # Create your views here.
 
@@ -63,6 +65,7 @@ def index(request):
 
             #Hell yeah dog, now we're multithreading
             threading.Thread(target=analyzeFile, args=(hashed,)).start()
+            #analyzeFile(hashed)
 
             # done
             print("nice")
@@ -111,21 +114,19 @@ def sampleNotFound(request, sampleHash):
     }
     return render(request, 'sampleNotFound.html', cont)
 
-
 # topic view
 def topicView(request, topic):
-    #TODO: sanitize topic, probably
+    if topic == 'newTE' or topic == 'newAP' or topic == 'newSA':
+        return redirect('editTopic', topic=topic)
     try:
+        #topicEntry = Topic.objects.get(topicTitle=urllib.parse.quote(topic))
         topicEntry = Topic.objects.get(topicTitle=topic)
     except Topic.DoesNotExist:
         return redirect('topicNotFound', topic=topic)
 
-    #cont = {
-    #    'topic': topicEntry.topicTitle,
-    #    'topicBody': topicEntry.topicBody,
-    #}
+    cont = {}
 
-    return render(request, 'topicView.html', {}) 
+    return render(request, 'topicView.html', cont)
 
 def topicNotFound(request, topic):
     cont = {
@@ -136,6 +137,8 @@ def topicNotFound(request, topic):
 
 def apiSample(request, sampleHash):
     if request.method == "POST":
+        if not request.user.is_authenticated:
+            return JsonResponse({"err": "user not authenticated", "status": "err"})
         print("got it")
         try:
             sample = MalwareSample.objects.get(fileHash=sampleHash)
@@ -173,23 +176,45 @@ def apiSample(request, sampleHash):
     obj['status'] = "good"
     return JsonResponse(obj)
 
+def apiSampleGetAll(request):
+    hashes = []
+    for sample in MalwareSample.objects.all():
+        hashes.append(sample.fileHash)
+
+    return JsonResponse({"hashes": hashes})
+
 def apiTopic(request, topic):
     if request.method == "POST":
+        if not request.user.is_authenticated:
+            return JsonResponse({"err": "user not authenticated", "status": "err"})
         print("got it")
+        if topic == 'newTE':
+            return easyAddTopic(request, 'TE')
+        if topic == 'newAP':
+            return easyAddTopic(request, 'AP')
+        if topic == 'newSA':
+            return easyAddTopic(request, 'SA')
         try:
             top = Topic.objects.get(topicTitle=topic)
-        except MalwareSample.DoesNotExist:
-            return JsonResponse({"err": str(topic) + " does not exist", "status":"err"})
-
-        print(request.POST.dict())
+        except Topic.DoesNotExist:
+            return JsonResponse({'status':'err', 'err':'could not find topic'})
 
         for key, value in request.POST.dict().items():
-            print("looking for " + key)
             if key == "topicBody":
-                top.topicBody = value
+                top.topicBody = bleach.clean(value)
             if key == "topicTitle":
+                value = urllib.parse.quote(value)
                 top.topicTitle = value
-       
+            if key == "samples":
+                value = json.loads(value)
+                top.relatedSamples.clear()
+                for fileHash in value:
+                    try:
+                        sample = MalwareSample.objects.get(fileHash = fileHash)
+                    except:
+                        return JsonResponse({"status":"err", "err":"could not find hash"})
+                    top.relatedSamples.add(sample)
+
         top.save()
         return JsonResponse({"status": "good"})
 
@@ -200,11 +225,51 @@ def apiTopic(request, topic):
     except Topic.DoesNotExist:
         return JsonResponse({"err": str(topic) + " does not exist", "status": "err"})
 
+    samps = []
+    for samp in top.relatedSamples.all():
+        print(samp.fileHash)
+        samps.append(bleach.clean(samp.fileHash))
+
     obj['topicTitle'] = bleach.clean(top.topicTitle)
     obj['topicBody'] = bleach.clean(top.topicBody)
-    obj['category'] = bleach.clean(top.category)
+    obj['category'] = bleach.clean(top.get_category_display())
+    obj['samples'] = samps
     obj['status'] = "good"
     return JsonResponse(obj)
+
+def easyAddTopic(request, cat):
+    top = Topic()
+    for key, value in request.POST.dict().items():
+        if key == "topicBody":
+            top.topicBody = bleach.clean(value)
+        if key == "topicTitle":
+            top.topicTitle = value
+
+    if top.topicBody == None or top.topicTitle == None or top.topicBody == "" or top.topicTitle == "":
+        return JsonResponse({'err': 'could not make topic with empty fields', 'status': 'err'})
+
+    top.save()
+
+    for key, value in request.POST.dict().items():
+        if key == "samples":
+            value = json.loads(value)
+            for fileHash in value:
+                try:
+                    sample = MalwareSample.objects.get(fileHash = fileHash)
+                except:
+                    JsonResponse({"status":"err", "err":"could not find hash"})
+                top.relatedSamples.add(sample)
+
+    if cat == "TE":
+        top.category = "TE"
+    elif cat == "AP":
+        top.category = "AP"
+    elif cat == "SA":
+        top.category = "SA"
+    top.save()
+    return JsonResponse({"status":"good", "msg": "made topic"})
+
+
 
 @login_required
 def editSample(request, sampleHash, mod):
@@ -303,14 +368,20 @@ def analyzeFile(hashed):
     ]
 
     for cmd in commands:
+        print("running " + cmd[0], flush=True)
         cmd.append(str("/samples/" + check.fileBlob.name))
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        print('popen, wait', flush=True)
         proc.wait()
+        print('done', flush=True)
         proc.stdout.flush()
+        print('flush', flush=True)
         out = str(proc.communicate()[0].decode('utf-8'))
-        if cmd[0] == 'file':
-            print(out)
-        setattr(check, cmd[0], str(out))
+        print('out', flush=True)
+        if proc.returncode != 0:
+            setattr(check, cmd[0], "Return exit code %d" % (proc.returncode))
+        else:
+            setattr(check, cmd[0], str(out))
     
     check.ready = True
     check.save()

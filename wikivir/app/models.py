@@ -26,7 +26,7 @@ class MalwareSample(models.Model):
     date = models.DateField(auto_now=True)
     ready = models.BooleanField(default=False)
     file = models.CharField(max_length=2560)
-    readelf = models.CharField(max_length=256000)
-    objdump = models.CharField(max_length=256000)
+    readelf = models.CharField(max_length=2560000)
+    objdump = models.CharField(max_length=2560000)
     relatedTopics = models.ManyToManyField(Topic)
 

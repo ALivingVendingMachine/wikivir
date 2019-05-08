@@ -1,27 +1,32 @@
 {% extends "base.html" %}
 
+{% load urlDecode %}
+
 {% block content %}
 {% load dictionaryUtil %}
 
 <h1>Techniques</h1>
 <ul>
     {% for i in te %}
-        <li><a href="{% url 'topicView' topic=i %}">{{ i }}</a></li>
+        <li><a href="{% url 'topicView' topic=i %}">{{ i|unquote_raw }}</a></li>
     {% endfor %}
 </ul>
 
+<a href="{% url 'topicView' topic='newTE' %}">Add a new technique</a>
 <h1>APTs</h1>
 <ul>
     {% for i in ap %}
-        <li><a href="{% url 'topicView' topic=i %}">{{ i }}</a></li>
+        <li><a href="{% url 'topicView' topic=i %}">{{ i|unquote_raw }}</a></li>
     {% endfor %}
 </ul>
 
-<h1>Samples</h1>
+<a href="{% url 'topicView' topic='newAP' %}">Add a new APT</a>
+<h1>Malware</h1>
 <ul>
     {% for i in sa %}
-        <li><a href="{% url 'topicView' topic=i %}">{{ i }}</a></li>
+        <li><a href="{% url 'topicView' topic=i %}">{{ i|unquote_raw }}</a></li>
     {% endfor %}
 </ul>
 
+<a href="{% url 'topicView' topic='newSA' %}">Add a new malware</a>
 {% endblock %}
